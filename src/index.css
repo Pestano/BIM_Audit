@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/*
+ * TOKENS DE DISEÑO - PALETA MONOCROMÁTICA (NEGRO Y GRISES)
+ * -----------------------------------------------------------------------
+ * Toda la paleta está configurada estrictamente en negros, blancos y
+ * tonos de grises neutros según la directriz del usuario:
+ * "deja todos los colores en negro o gris y luego yo te iré diciendo dónde tienes que poner color".
+ * -----------------------------------------------------------------------
+ */
+@theme {
+  /* Tipografía global: Inconsolata (alta, estrecha y esbelta como en la imagen) */
+  --font-sans: 'Inconsolata', Consolas, 'Lucida Console', Monaco, monospace;
+  --font-mono: 'Inconsolata', Consolas, 'Lucida Console', Monaco, monospace;
+  --font-serif: 'Inconsolata', Consolas, 'Lucida Console', Monaco, monospace;
+
+  /* Estado: BUENO (Verde) */
+  --color-ok-50: #F0FDF4;
+  --color-ok-100: #DCFCE7;
+  --color-ok-200: #BBF7D0;
+  --color-ok-300: #86EFAC;
+  --color-ok-400: #4ADE80;
+  --color-ok-500: #22C55E;
+  --color-ok-600: #16A34A;
+  --color-ok-700: #15803D;
+  --color-ok-800: #166534;
+  --color-ok-900: #14532D;
+
+  /* Estado: ALERTA (Amarillo) */
+  --color-alerta-50: #FEFCE8;
+  --color-alerta-100: #FEF9C3;
+  --color-alerta-200: #FEF08A;
+  --color-alerta-300: #FDE047;
+  --color-alerta-400: #FACC15;
+  --color-alerta-500: #EAB308;
+  --color-alerta-600: #CA8A04;
+  --color-alerta-700: #A16207;
+  --color-alerta-800: #854D0E;
+  --color-alerta-900: #713F12;
+
+  /* Estado: FALLO (Rojo) */
+  --color-fallo-50: #FEF2F2;
+  --color-fallo-100: #FEE2E2;
+  --color-fallo-200: #FECACA;
+  --color-fallo-300: #FCA5A5;
+  --color-fallo-400: #F87171;
+  --color-fallo-500: #EF4444;
+  --color-fallo-600: #DC2626;
+  --color-fallo-700: #B91C1C;
+  --color-fallo-800: #991B1B;
+  --color-fallo-900: #7F1D1D;
+
+  /* Marca / acciones principales (Gris claro / neutro suave y elegante, nunca negro) */
+  --color-marca-50: #F8FAFC;
+  --color-marca-100: #F1F5F9;
+  --color-marca-200: #E2E8F0;
+  --color-marca-300: #CBD5E1;
+  --color-marca-400: #94A3B8;
+  --color-marca-500: #94A3B8;
+  --color-marca-600: #9CA3AF;
+  --color-marca-700: #6B7280;
+  --color-marca-800: #4B5563;
+  --color-marca-900: #374151;
+
+  /* ESCALA TIPOGRÁFICA */
+  --text-micro: 7px;
+  --text-mini: 8px;
+  --text-etiqueta: 9px;
+  --text-dato: 10px;
+  --text-nota: 11px;
+
+  /* COLORES DE DISCIPLINA - MONOCROMÁTICOS (GRISES ELEGANTES, SIN NEGRO) */
+  --color-disciplina-estructura-50: #F4F4F5;
+  --color-disciplina-estructura-100: #E4E4E7;
+  --color-disciplina-estructura-200: #D4D4D8;
+  --color-disciplina-estructura-300: #A1A1AA;
+  --color-disciplina-estructura-600: #6B7280;
+  --color-disciplina-estructura-700: #4B5563;
+  --color-disciplina-estructura-800: #374151;
+
+  --color-disciplina-arquitectura-50: #F4F4F5;
+  --color-disciplina-arquitectura-100: #E4E4E7;
+  --color-disciplina-arquitectura-200: #D4D4D8;
+  --color-disciplina-arquitectura-300: #A1A1AA;
+  --color-disciplina-arquitectura-600: #6B7280;
+  --color-disciplina-arquitectura-700: #4B5563;
+  --color-disciplina-arquitectura-800: #374151;
+
+  --color-disciplina-instalaciones-50: #F4F4F5;
+  --color-disciplina-instalaciones-100: #E4E4E7;
+  --color-disciplina-instalaciones-200: #D4D4D8;
+  --color-disciplina-instalaciones-300: #A1A1AA;
+  --color-disciplina-instalaciones-600: #6B7280;
+  --color-disciplina-instalaciones-700: #4B5563;
+  --color-disciplina-instalaciones-800: #374151;
+
+  --color-disciplina-urbanizacion-50: #F4F4F5;
+  --color-disciplina-urbanizacion-100: #E4E4E7;
+  --color-disciplina-urbanizacion-200: #D4D4D8;
+  --color-disciplina-urbanizacion-300: #A1A1AA;
+  --color-disciplina-urbanizacion-600: #6B7280;
+  --color-disciplina-urbanizacion-700: #4B5563;
+  --color-disciplina-urbanizacion-800: #374151;
+
+  --color-disciplina-federado-50: #F4F4F5;
+  --color-disciplina-federado-100: #E4E4E7;
+  --color-disciplina-federado-200: #D4D4D8;
+  --color-disciplina-federado-300: #A1A1AA;
+  --color-disciplina-federado-600: #6B7280;
+  --color-disciplina-federado-700: #4B5563;
+  --color-disciplina-federado-800: #374151;
+}
+
+/*
+ * TIPOGRAFÍA
+ */
+/* Fuente Sans para encabezados y botones */
+:root {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Aplicación de fuentes */
+h1, h2, h3, h4, h5, h6,
+button {
+  font-family: var(--font-sans) !important;
+  font-weight: 700 !important; /* Asegurar negrita */
+}
+
+/* Resto de elementos siguen con la tipografía definida para el cuerpo */
+body,
+input,
+select,
+textarea,
+p, span, div, table, th, td, label, code, pre {
+  font-family: 'Inconsolata', Consolas, 'Lucida Console', Monaco, monospace;
+}
+
+body {
+  background-color: #FAFAFA;
+  color: #18181B;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar sutil y estilizado para tarjetas */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 #F1F5F9;
+}
+

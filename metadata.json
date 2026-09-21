@@ -1,0 +1,8 @@
+{
+  "name": "Remix Auditoría Modelos BIM.V1.0",
+  "description": "Aplicación para la auditoría interna de modelos BIM con interfaz moderna y profesional.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
