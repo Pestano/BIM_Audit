@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Project, RevitBimData } from './types';
+import { Project, RevitBimData, DEFAULT_DETAIL_ELEMENTS_CONFIG } from './types';
 
 const mockBimData: RevitBimData = {
   "fase_auditoria": "CodigosInternos",
@@ -34,12 +34,14 @@ const mockBimData: RevitBimData = {
         "norte_sur_m": 4065795.696,
         "este_oeste_m": 372200.40500000003,
         "elevacion_m": 20.629999999999999,
-        "angulo_norte_grados": 25.384
+        "angulo_norte_grados": 25.384,
+        "esta_pineado": true
       },
       "punto_reconocimiento": {
         "norte_sur_m": 4065795.696,
         "este_oeste_m": 372200.40500000003,
-        "elevacion_m": 20.629999999999999
+        "elevacion_m": 20.629999999999999,
+        "esta_pineado": true
       }
     },
     "subproyectos": {
@@ -91,16 +93,180 @@ const mockBimData: RevitBimData = {
     "niveles": {
       "cantidad": 11,
       "listado": [
-        { "id": 162976, "nombre": "S-3_EST", "elevacion_m": -7.1, "es_nivel_edificio": true, "es_estructura": true },
-        { "id": 163440, "nombre": "N+0 EST", "elevacion_m": 3.7, "es_nivel_edificio": true, "es_estructura": true },
-        { "id": 163782, "nombre": "N+3", "elevacion_m": 13.7, "es_nivel_edificio": false, "es_estructura": false }
+        { "id": 162976, "nombre": "S-3_EST", "elevacion_m": -7.1, "es_nivel_edificio": true, "es_estructura": true, "esta_pineado": true },
+        { "id": 163440, "nombre": "N+0 EST", "elevacion_m": 3.7, "es_nivel_edificio": true, "es_estructura": true, "esta_pineado": true },
+        { "id": 163782, "nombre": "N+3", "elevacion_m": 13.7, "es_nivel_edificio": false, "es_estructura": false, "esta_pineado": true }
       ]
     },
     "rejillas": {
       "cantidad": 32,
       "listado": [
-        { "id": 320080, "nombre": "1", "tipo_curva": "Line" },
-        { "id": 320110, "nombre": "A", "tipo_curva": "Line" }
+        { "id": 320080, "nombre": "1", "tipo_curva": "Line", "esta_pineado": true },
+        { "id": 320110, "nombre": "A", "tipo_curva": "Line", "esta_pineado": true }
+      ]
+    },
+    "vistas": {
+      "cantidad": 24,
+      "listado": [
+        { "id": 145012, "nombre": "00_PLANTA BAJA_ESTRUCTURAS" },
+        { "id": 145025, "nombre": "01_PLANTA PRIMERA_ESTRUCTURAS" },
+        { "id": 145038, "nombre": "02_PLANTA SEGUNDA_ESTRUCTURAS" },
+        { "id": 145060, "nombre": "3D_ESTRUCTURA_GENERAL" },
+        { "id": 145082, "nombre": "SEC_LONGITUDINAL_01" },
+        { "id": 145095, "nombre": "DETALLE_UNION_VIGA_PILARES" }
+      ]
+    },
+    "plantillas_vista": {
+      "cantidad": 6,
+      "cantidad_sin_usar": 1,
+      "listado": [
+        { "id": 201100, "nombre": "BB_PLANTILLA_PLANTAS_EST", "usada": true },
+        { "id": 201105, "nombre": "BB_PLANTILLA_SECCIONES_EST", "usada": true },
+        { "id": 201110, "nombre": "BB_PLANTILLA_3D_COORDINACION", "usada": true },
+        { "id": 201115, "nombre": "BB_PLANTILLA_DETALLES_ARMADO", "usada": true },
+        { "id": 201120, "nombre": "BB_PLANTILLA_REVISION_OBRA", "usada": false }
+      ]
+    },
+    "planos": {
+      "cantidad": 8,
+      "listado": [
+        { "id": 305100, "numero_plano": "EST-01", "nombre": "CIMENTACIÓN Y PILARES P.BAJA" },
+        { "id": 305101, "numero_plano": "EST-02", "nombre": "ENCOFRADO FORJADO P.PRIMERA" },
+        { "id": 305102, "numero_plano": "EST-03", "nombre": "ENCOFRADO FORJADO P.SEGUNDA" },
+        { "id": 305103, "numero_plano": "EST-04", "nombre": "SECCIONES GENERALES ESTRUCTURA" }
+      ]
+    },
+    "tablas": {
+      "cantidad": 5,
+      "listado": [
+        { "id": 412010, "nombre": "TABLA MEDICIÓN HORMIGÓN EN PILARES" },
+        { "id": 412020, "nombre": "TABLA MEDICIÓN ACERO CORRUGADO B500S" },
+        { "id": 412030, "nombre": "TABLA DE PILARES METÁLICOS" },
+        { "id": 412040, "nombre": "LISTADO DE FORJADOS UNIDIRECCIONALES" }
+      ]
+    },
+    "habitaciones": {
+      "cantidad": 18,
+      "cantidad_sin_cerrar": 0,
+      "listado": [
+        { "id": 510001, "nombre": "SALA DE CONTROL PROTONTERAPIA", "numero": "S-01", "cerrada": true },
+        { "id": 510002, "nombre": "BÚNKER TRATAMIENTO 1", "numero": "S-02", "cerrada": true },
+        { "id": 510003, "nombre": "SALA TÉCNICA CLIMATIZACIÓN", "numero": "S-03", "cerrada": true },
+        { "id": 510004, "nombre": "PASILLO DE ACCESO BLINDADO", "numero": "S-04", "cerrada": true }
+      ]
+    },
+    "vinculos_cad": {
+      "cantidad": 2,
+      "listado": [
+        { 
+          "id": 620101, 
+          "ids": [620101],
+          "nombre": "PLANTA_TOPOGRAFICA_REPLANTEO.dwg", 
+          "vista_vinculada_id": 145012, 
+          "vista_vinculada_nombre": "00_PLANTA BAJA_ESTRUCTURAS", 
+          "visible_en_todas_las_vistas": false, 
+          "pineado": true,
+          "esta_pineado": true 
+        },
+        { 
+          "id": 620102, 
+          "ids": [620102],
+          "nombre": "DETALLE_ESTRUCTURA_EXISTENTE.dwg", 
+          "vista_vinculada_id": 145095, 
+          "vista_vinculada_nombre": "DETALLE_UNION_VIGA_PILARES", 
+          "visible_en_todas_las_vistas": false, 
+          "pineado": true,
+          "esta_pineado": true 
+        }
+      ]
+    },
+    "parametros_proyecto_y_compartidos": {
+      "cantidad": 14,
+      "cantidad_proyecto": 6,
+      "cantidad_compartidos": 8,
+      "listado": [
+        { "id": 701, "nombre": "BB_00_INF_AcronimoProyecto", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 702, "nombre": "BB_EST_ResistenciaHormigon", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 703, "nombre": "BB_EST_TipoAcero", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 704, "nombre": "BB_COD_SectorIncendio", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 705, "nombre": "BB_REV_NumeroRevision", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 706, "nombre": "BB_FASE_FaseEjecucion", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 707, "nombre": "BB_DOC_EmisionPlano", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 708, "nombre": "BB_LOTE_Subcontratista", "tipo": "Texto", "es_compartido": true, "tipo_parametro": "compartido" },
+        { "id": 801, "nombre": "Comentarios de revisión de cálculo", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" },
+        { "id": 802, "nombre": "Estado de comprobación de armaduras", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" },
+        { "id": 803, "nombre": "Control de fisuración", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" },
+        { "id": 804, "nombre": "Fecha de última validación", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" },
+        { "id": 805, "nombre": "Código de partida presupuestaria", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" },
+        { "id": 806, "nombre": "Referencia de planos de taller", "tipo": "Texto", "es_compartido": false, "tipo_parametro": "proyecto" }
+      ]
+    },
+    "grupos_anotacion": {
+      "cantidad": 3,
+      "listado": [
+        { "id": 810010, "ids": [810010, 810011], "nombre": "CUADRO_CARGAS_VANO_CENTRAL", "pineado": true, "esta_pineado": true },
+        { "id": 810020, "ids": [810020], "nombre": "LEYENDA_TIPO_HORMIGONES", "pineado": true, "esta_pineado": true },
+        { "id": 810030, "ids": [810030, 810031], "nombre": "NOTAS_GENERALES_SOLAPE_ACERO", "pineado": true, "esta_pineado": true }
+      ]
+    }
+  }
+};
+
+const mockAnotacionBimData: RevitBimData = {
+  ...mockBimData,
+  "fase_auditoria": "ElementosDeAnotacion",
+  "fecha_exportacion": "2026-09-17T11:45:00",
+  "modelo": {
+    "nombre_archivo": "HMM-BCI-CO-ZZ-MOD-ARQ-R25_anotacion.rvt",
+    "disciplina": "ARQ",
+    "revit_version": "2025"
+  },
+  "codechecking": {
+    ...mockBimData.codechecking,
+    "habitaciones": {
+      "cantidad": 26,
+      "cantidad_sin_cerrar": 1,
+      "listado": [
+        { "id": 520001, "nombre": "HABITACIÓN 101 CONSULTA PEDIÁTRICA", "numero": "101", "cerrada": true },
+        { "id": 520002, "nombre": "HABITACIÓN 102 SALA DE ESPERA", "numero": "102", "cerrada": true },
+        { "id": 520003, "nombre": "SALA TRIAJE URGENCIAS", "numero": "103", "cerrada": true },
+        { "id": 520004, "nombre": "PATIO INTERIOR SIN CERRAR", "numero": "104", "cerrada": false }
+      ]
+    },
+    "plantillas_vista": {
+      "cantidad": 8,
+      "cantidad_sin_usar": 2,
+      "listado": [
+        { "id": 202100, "nombre": "ARQ_PLANTILLA_PLANTAS_DISTRIBUCION", "usada": true },
+        { "id": 202105, "nombre": "ARQ_PLANTILLA_SECCIONES_FACHADAS", "usada": true },
+        { "id": 202110, "nombre": "ARQ_PLANTILLA_DETALLES_CONSTRUCTIVOS", "usada": true },
+        { "id": 202115, "nombre": "ARQ_PLANTILLA_EVACUACION_INCENDIOS", "usada": false },
+        { "id": 202120, "nombre": "ARQ_PLANTILLA_ANTIGUA_SIN_USO", "usada": false }
+      ]
+    },
+    "vinculos_cad": {
+      "cantidad": 2,
+      "listado": [
+        {
+          "id": 630101,
+          "ids": [630101],
+          "nombre": "LEVANTAMIENTO_FACHADA_EXISTENTE.dwg",
+          "vista_vinculada_id": 145082,
+          "vista_vinculada_nombre": "SEC_LONGITUDINAL_01",
+          "visible_en_todas_las_vistas": false,
+          "pineado": true,
+          "esta_pineado": true
+        },
+        {
+          "id": 630102,
+          "ids": [630102],
+          "nombre": "BORRADOR_DISTRIBUCION_MOBILIARIO.dwg",
+          "vista_vinculada_id": 145012,
+          "vista_vinculada_nombre": "00_PLANTA BAJA_ESTRUCTURAS",
+          "visible_en_todas_las_vistas": true,
+          "pineado": false,
+          "esta_pineado": false
+        }
       ]
     }
   }
@@ -122,6 +288,17 @@ export const MOCK_PROJECTS: Project[] = [
         createdAt: "17/09/2026 09:24",
         elementCount: 3850,
         data: mockBimData
+      },
+      {
+        id: "f2",
+        name: "HMM-BCI-CO-ZZ-MOD-ARQ-DOC-R25.json",
+        customName: "Modelo de Arquitectura (Doc)",
+        modelType: "arquitectura",
+        auditPhase: "Elementos de Anotación",
+        date: "17/09/2026",
+        createdAt: "17/09/2026 11:45",
+        elementCount: 84,
+        data: mockAnotacionBimData
       }
     ],
     auditConfig: {
@@ -174,6 +351,9 @@ export const MOCK_PROJECTS: Project[] = [
             { nombre: "N+0 EST", elevacion_m: 3.7, requiereEstructura: false, requiereNivelEdificio: true }
           ]
         }
+      },
+      detailElements: {
+        ...DEFAULT_DETAIL_ELEMENTS_CONFIG
       }
     }
   }

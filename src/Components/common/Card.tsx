@@ -1,48 +1,53 @@
 import React from 'react';
-import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { AuditCheckResult } from '../../lib/auditEngine';
 
-/**
- * Propiedades para el contenedor Card de las métricas del Dashboard.
- */
 interface CardProps {
-  title: string;             // Título superior de la tarjeta (se muestra en mayúsculas pequeñas)
-  children: React.ReactNode; // Contenido interno
-  className?: string;        // Estilos de clase adicionales opcionales
-  onClick?: () => void;      // Función de clic opcional
-  auditResult?: AuditCheckResult; // Resultado de la auditoría para esta tarjeta
-  scrollable?: boolean;      // Si el contenido debe tener scroll vertical interno
-  contentClassName?: string; // Estilos adicionales para el contenedor de contenido
+  title: string;
+  subtitle?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  auditResult?: AuditCheckResult;
+  scrollable?: boolean;
+  contentClassName?: string;
+  detailStyle?: boolean;
 }
 
-/**
- * Tarjeta contenedor con estilo estandarizado para cada sección del informe BIM.
- */
-export const Card: React.FC<CardProps> = ({ 
-  title, 
-  children, 
-  className = "", 
-  onClick, 
+export const Card: React.FC<CardProps> = ({
+  title,
+  subtitle,
+  children,
+  className = '',
+  onClick,
   auditResult,
   scrollable = false,
-  contentClassName = ""
+  contentClassName = '',
+  detailStyle = false,
 }) => (
-  <div 
+  <div
     onClick={onClick}
-    className={`bg-white p-4 rounded-xl border border-slate-100 relative flex flex-col ${className}`}
+    className={detailStyle
+      ? `bg-white rounded-3xl p-5 border border-zinc-200/90 shadow-xs relative flex flex-col h-full min-h-0 ${className}`
+      : `bg-white p-4 rounded-xl border border-slate-100 relative flex flex-col ${className}`
+    }
   >
-    <div className="flex justify-between items-start mb-2.5 shrink-0">
-      <h3 className="text-slate-500 text-etiqueta font-semibold uppercase tracking-wider">
-        {title}
-      </h3>
-      {auditResult && (
-        <div title={auditResult.message}>
-          {auditResult.status === 'BUENO' && <CheckCircle2 size={14} className="text-ok-500" />}
-          {auditResult.status === 'FALLO' && <XCircle size={14} className="text-fallo-500" />}
-          {auditResult.status === 'ALERTA' && <AlertTriangle size={14} className="text-alerta-500" />}
-        </div>
-      )}
+    <div className={`flex items-start justify-between ${detailStyle ? 'pb-3 border-b border-zinc-100 mb-3 shrink-0' : 'mb-2.5 shrink-0'}`}>
+      <div className="min-w-0">
+        <h3 className={detailStyle
+          ? 'text-sm font-black text-zinc-900 uppercase tracking-normal'
+          : 'text-slate-500 text-etiqueta font-semibold uppercase tracking-wider'
+        }>
+          {title}
+        </h3>
+        {detailStyle && subtitle && (
+          <div className="text-[11px] font-mono text-zinc-500 mt-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+            {subtitle}
+          </div>
+        )}
+      </div>
+      {!detailStyle && auditResult && null}
     </div>
+
     <div className={`w-full flex-1 min-h-0 ${scrollable ? 'overflow-y-auto custom-scrollbar pr-1' : ''} ${contentClassName}`}>
       {children}
     </div>

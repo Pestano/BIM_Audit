@@ -24,13 +24,24 @@ import {
   CheckCircle2,
   HelpCircle,
   Download,
+  Upload,
   X,
-  FileText
+  FileText,
+  Sliders
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { Project, AuditConfig, ModelDiscipline, DisciplineAuditConfig } from '../../types';
+import { 
+  Project, 
+  AuditConfig, 
+  ModelDiscipline, 
+  DisciplineAuditConfig,
+  DEFAULT_DETAIL_ELEMENTS_CONFIG,
+  DEFAULT_ELEMENTS_3D_CONFIG
+} from '../../types';
 import { MODEL_DISCIPLINES, getDisciplineLabel, getDisciplineColorClasses } from '../../utils/modelUtils';
 import { auditModelName } from '../../lib/auditEngine';
+import { DetailElementsSettings } from './DetailElementsSettings';
+import { Elements3DSettings } from './Elements3DSettings';
 
 interface SettingsViewProps {
   currentProject: Project;
@@ -126,11 +137,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
       },
       expectedWorksets: existing?.expectedWorksets || initialByDiscipline.estructura!.expectedWorksets,
       expectedLevels: existing?.expectedLevels || initialByDiscipline.estructura!.expectedLevels,
-      byDiscipline: initialByDiscipline
+      byDiscipline: initialByDiscipline,
+      detailElements: existing?.detailElements 
+        ? { ...DEFAULT_DETAIL_ELEMENTS_CONFIG, ...existing.detailElements } 
+        : { ...DEFAULT_DETAIL_ELEMENTS_CONFIG },
+      elements3D: existing?.elements3D
+        ? {
+            ...DEFAULT_ELEMENTS_3D_CONFIG,
+            ...existing.elements3D,
+            nomenclatureByCategory: { ...(existing.elements3D.nomenclatureByCategory || {}) },
+            wallRulesByDiscipline: {
+              ...(DEFAULT_ELEMENTS_3D_CONFIG.wallRulesByDiscipline || {}),
+              ...(existing.elements3D.wallRulesByDiscipline || {})
+            }
+          }
+        : {
+            ...DEFAULT_ELEMENTS_3D_CONFIG,
+            nomenclatureByCategory: {},
+            wallRulesByDiscipline: { ...(DEFAULT_ELEMENTS_3D_CONFIG.wallRulesByDiscipline || {}) }
+          }
     };
   });
 
-  // Pestaña de navegación (General y Coordenadas son comunes; Subproyectos y Niveles son por modelo)
+  // División principal: 'general' (CONFIGURACIÓN GENERAL) o 'detalle' (ELEMENTOS DE DETALLE)
+  const [mainSection, setMainSection] = useState<'general' | 'detalle' | 'elementos3d'>('general');
+
+  // Pestaña de navegación para Configuración General
   const [activeTab, setActiveTab] = useState<'general' | 'coordinates' | 'worksets' | 'levels'>('general');
 
   // Disciplina activa para configurar subproyectos o niveles específicos
@@ -144,6 +176,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
 
   // Estados de importación Excel
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const rulesInputRef = useRef<HTMLInputElement>(null);
   const [importType, setImportType] = useState<'worksets' | 'levels' | 'coordinates' | null>(null);
   const [showExcelHelp, setShowExcelHelp] = useState<'coordinates' | 'worksets' | 'levels' | null>(null);
 
@@ -407,6 +440,87 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
     reader.readAsBinaryString(file);
   };
 
+
+  const exportNomenclatureRules = () => {
+    const detail = config.detailElements || DEFAULT_DETAIL_ELEMENTS_CONFIG;
+    const payload = {
+      format: 'bim-audit-nomenclature-rules',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      sourceProject: currentProject.name,
+      detailElements: {
+        vistasNomenclaturaPorTipo: detail.vistasNomenclaturaPorTipo || DEFAULT_DETAIL_ELEMENTS_CONFIG.vistasNomenclaturaPorTipo,
+        plantillasNomenclatura: detail.plantillasNomenclatura || DEFAULT_DETAIL_ELEMENTS_CONFIG.plantillasNomenclatura,
+        planosNomenclatura: detail.planosNomenclatura || DEFAULT_DETAIL_ELEMENTS_CONFIG.planosNomenclatura,
+        tablasNomenclatura: detail.tablasNomenclatura || DEFAULT_DETAIL_ELEMENTS_CONFIG.tablasNomenclatura,
+      },
+      elements3D: {
+        nomenclatureByCategory: config.elements3D?.nomenclatureByCategory || {},
+        wallRulesByDiscipline: config.elements3D?.wallRulesByDiscipline || DEFAULT_ELEMENTS_3D_CONFIG.wallRulesByDiscipline || {}
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const safeProject = (currentProject.name || 'proyecto').replace(/[^a-zA-Z0-9_-]+/g, '_');
+    link.href = url;
+    link.download = `Reglas_Nomenclatura_${safeProject}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const importNomenclatureRules = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result || ''));
+        if (parsed?.format !== 'bim-audit-nomenclature-rules' || parsed?.version !== 1) {
+          throw new Error('Formato de reglas no reconocido.');
+        }
+
+        const importedDetail = parsed.detailElements || {};
+        const imported3D = parsed.elements3D || {};
+
+        setConfig(prev => ({
+          ...prev,
+          detailElements: {
+            ...(prev.detailElements || DEFAULT_DETAIL_ELEMENTS_CONFIG),
+            ...(importedDetail.vistasNomenclaturaPorTipo ? { vistasNomenclaturaPorTipo: importedDetail.vistasNomenclaturaPorTipo } : {}),
+            ...(importedDetail.plantillasNomenclatura ? { plantillasNomenclatura: importedDetail.plantillasNomenclatura, plantillasNomenclaturaLibre: importedDetail.plantillasNomenclatura.libre } : {}),
+            ...(importedDetail.planosNomenclatura ? { planosNomenclatura: importedDetail.planosNomenclatura, planosNomenclaturaLibre: importedDetail.planosNomenclatura.libre } : {}),
+            ...(importedDetail.tablasNomenclatura ? { tablasNomenclatura: importedDetail.tablasNomenclatura, tablasNomenclaturaLibre: importedDetail.tablasNomenclatura.libre } : {}),
+          },
+          elements3D: {
+            ...(prev.elements3D || DEFAULT_ELEMENTS_3D_CONFIG),
+            nomenclatureByCategory: {
+              ...((prev.elements3D || DEFAULT_ELEMENTS_3D_CONFIG).nomenclatureByCategory || {}),
+              ...(imported3D.nomenclatureByCategory || {})
+            },
+            wallRulesByDiscipline: {
+              ...(DEFAULT_ELEMENTS_3D_CONFIG.wallRulesByDiscipline || {}),
+              ...((prev.elements3D || DEFAULT_ELEMENTS_3D_CONFIG).wallRulesByDiscipline || {}),
+              ...(imported3D.wallRulesByDiscipline || {})
+            }
+          }
+        }));
+
+        alert('Reglas importadas. Revisa la configuración y pulsa “Guardar Configuración” para aplicarlas al proyecto.');
+      } catch (error) {
+        console.error('Error al importar reglas de nomenclatura:', error);
+        alert('No se pudo importar el archivo de reglas. Comprueba que sea un JSON exportado por esta aplicación.');
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const getDisciplineIcon = (key: ModelDiscipline, size = 16) => {
     switch (key) {
       case 'estructura': return <Layers size={size} />;
@@ -431,6 +545,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
         accept=".xlsx, .xls, .csv" 
         className="hidden" 
       />
+      <input
+        type="file"
+        ref={rulesInputRef}
+        onChange={importNomenclatureRules}
+        accept="application/json,.json"
+        className="hidden"
+      />
 
       {/* Cabecera Principal de Configuración */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -450,7 +571,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
           </div>
         </div>
         
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           {savedSuccess && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.9 }} 
@@ -461,6 +582,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
               <span>¡Guardado!</span>
             </motion.div>
           )}
+
+          <button
+            type="button"
+            onClick={() => rulesInputRef.current?.click()}
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 font-bold text-xs rounded-2xl hover:bg-slate-50 transition-all"
+            title="Importar reglas de nomenclatura desde otro proyecto"
+          >
+            <Upload size={16} />
+            <span>Importar reglas</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={exportNomenclatureRules}
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-300 text-slate-700 font-bold text-xs rounded-2xl hover:bg-slate-50 transition-all"
+            title="Exportar reglas de nomenclatura de Elementos de Anotación y Elementos 3D"
+          >
+            <Download size={16} />
+            <span>Exportar reglas</span>
+          </button>
 
           <button 
             onClick={onViewAudit}
@@ -480,8 +621,73 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
         </div>
       </div>
 
-      {/* Contenedor Principal con Sidebar y Panel de Ajustes */}
-      <div className="flex flex-col lg:flex-row gap-6">
+      {/* Selector Principal de Configuración: CONFIGURACIÓN GENERAL vs ELEMENTOS DE DETALLE */}
+      <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-full sm:w-fit">
+        <button
+          type="button"
+          onClick={() => setMainSection('general')}
+          className={`flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
+            mainSection === 'general'
+              ? 'bg-white text-zinc-900 shadow-xs border border-zinc-200/80'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Sliders size={16} className={mainSection === 'general' ? 'text-zinc-900' : 'text-slate-400'} />
+          <span>Configuración General</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainSection('detalle')}
+          className={`flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
+            mainSection === 'detalle'
+              ? 'bg-white text-zinc-900 shadow-xs border border-zinc-200/80'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <FileText size={16} className={mainSection === 'detalle' ? 'text-zinc-900' : 'text-slate-400'} />
+          <span>Elementos de Detalle</span>
+          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+            mainSection === 'detalle' ? 'bg-zinc-100 text-zinc-800 border-zinc-300' : 'bg-slate-200 text-slate-600 border-slate-300'
+          }`}>
+            8 Requisitos
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMainSection('elementos3d')}
+          className={`flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
+            mainSection === 'elementos3d'
+              ? 'bg-white text-zinc-900 shadow-xs border border-zinc-200/80'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Layers size={16} className={mainSection === 'elementos3d' ? 'text-zinc-900' : 'text-slate-400'} />
+          <span>Elementos 3D</span>
+          <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border ${
+            mainSection === 'elementos3d' ? 'bg-zinc-100 text-zinc-800 border-zinc-300' : 'bg-slate-200 text-slate-600 border-slate-300'
+          }`}>
+            Nomenclatura
+          </span>
+        </button>
+      </div>
+
+      {mainSection === 'detalle' ? (
+        <DetailElementsSettings
+          currentProject={currentProject}
+          config={config.detailElements || DEFAULT_DETAIL_ELEMENTS_CONFIG}
+          onChange={(newDet) => setConfig(prev => ({ ...prev, detailElements: newDet }))}
+        />
+      ) : mainSection === 'elementos3d' ? (
+        <Elements3DSettings
+          currentProject={currentProject}
+          config={config.elements3D || DEFAULT_ELEMENTS_3D_CONFIG}
+          onChange={(new3D) => setConfig(prev => ({ ...prev, elements3D: new3D }))}
+        />
+      ) : (
+        /* Contenedor Principal con Sidebar y Panel de Ajustes */
+        <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar de Ajustes estructurado en: Común a todos vs Específico por modelo */}
         <div className="w-full lg:w-72 flex flex-col gap-4 shrink-0">
           {/* Grupo 1: Común a todos los modelos */}
@@ -1418,6 +1624,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ currentProject, onSa
           )}
         </div>
       </div>
+    )}
 
       {/* Modal explicativo de Estructura Excel */}
       <AnimatePresence>

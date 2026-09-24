@@ -20,17 +20,3 @@ export const readJsonFile = async (file: File): Promise<any> => {
 
   return JSON.parse(text);
 };
-
-/**
- * Detecta automáticamente si el JSON importado corresponde a la 
- * Fase 2 (Documentación y Elementos) o a la Fase 1 (Configuración Inicial).
- */
-export const detectAuditPhase = (jsonContent: any): 'DocumentacionYElementos' | 'ConfiguracionInicial' => {
-  if (
-    jsonContent?.fase_auditoria === 'DocumentacionYElementos' ||
-    jsonContent?.codechecking?.vistas !== undefined
-  ) {
-    return 'DocumentacionYElementos';
-  }
-  return 'ConfiguracionInicial';
-};
